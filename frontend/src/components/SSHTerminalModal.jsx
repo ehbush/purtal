@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
@@ -32,10 +33,17 @@ export default function SSHTerminalModal({ clientId, clientName, isOpen, onClose
     xterm.loadAddon(fitAddon);
     xterm.open(terminalRef.current);
     
-    // Fit terminal to container
-    setTimeout(() => {
-      fitAddon.fit();
-    }, 100);
+    // Fit terminal to container - use multiple attempts to ensure proper sizing
+    const fitTerminal = () => {
+      if (fitAddon && terminalRef.current) {
+        fitAddon.fit();
+      }
+    };
+    
+    // Fit immediately and after a short delay to handle any layout delays
+    fitTerminal();
+    setTimeout(fitTerminal, 100);
+    setTimeout(fitTerminal, 300);
 
     xtermRef.current = xterm;
     fitAddonRef.current = fitAddon;
@@ -118,14 +126,14 @@ export default function SSHTerminalModal({ clientId, clientName, isOpen, onClose
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="bg-gray-900 rounded-lg shadow-2xl w-full h-full max-w-6xl max-h-[90vh] m-4 flex flex-col"
+        className="absolute inset-4 bg-gray-900 rounded-lg shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-white">SSH Terminal - {clientName}</h2>
             <div className="flex items-center gap-2">
@@ -143,16 +151,19 @@ export default function SSHTerminalModal({ clientId, clientName, isOpen, onClose
 
         {/* Error message */}
         {error && (
-          <div className="px-4 py-2 bg-red-900/50 border-b border-red-700">
+          <div className="px-4 py-2 bg-red-900/50 border-b border-red-700 flex-shrink-0">
             <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
 
         {/* Terminal */}
-        <div className="flex-1 p-4 overflow-hidden">
+        <div className="flex-1 p-4 overflow-hidden min-h-0">
           <div ref={terminalRef} className="w-full h-full"></div>
         </div>
       </div>
     </div>
   );
+
+  // Render modal at document body level using portal to escape any parent container constraints
+  return createPortal(modalContent, document.body);
 }
