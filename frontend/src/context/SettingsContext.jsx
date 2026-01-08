@@ -61,8 +61,10 @@ export function SettingsProvider({ children }) {
     try {
       const updated = await api.put('/config/settings', newSettings);
       // Use functional update to ensure we have the latest state
+      let mergedSettingsResult;
       setSettings(prevSettings => {
         const mergedSettings = { ...prevSettings, ...updated, ...newSettings };
+        mergedSettingsResult = mergedSettings;
         
         // Handle theme change - use 'dark' class for Tailwind dark mode
         if (newSettings.theme) {
@@ -77,8 +79,8 @@ export function SettingsProvider({ children }) {
         return mergedSettings;
       });
       
-      // Return the merged settings (we need to get it from state after update)
-      return { ...settings, ...updated, ...newSettings };
+      // Return the merged settings computed during the functional update
+      return mergedSettingsResult;
     } catch (error) {
       console.error('Error updating settings:', error);
       throw error;

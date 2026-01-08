@@ -93,6 +93,15 @@ async function checkServiceHealth(service, timeout = 5000, storage = null) {
   }
 }
 
+// Get cached health status
+healthRouter.get('/cache/all', (req, res) => {
+  const cache = {};
+  healthCache.forEach((value, key) => {
+    cache[key] = value;
+  });
+  res.json(cache);
+});
+
 // Check health for a single service
 healthRouter.get('/:id', async (req, res) => {
   try {
@@ -131,15 +140,6 @@ healthRouter.get('/', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-// Get cached health status
-healthRouter.get('/cache/all', (req, res) => {
-  const cache = {};
-  healthCache.forEach((value, key) => {
-    cache[key] = value;
-  });
-  res.json(cache);
 });
 
 // Ping-based health check for clients

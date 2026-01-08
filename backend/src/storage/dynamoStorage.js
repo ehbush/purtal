@@ -225,9 +225,14 @@ export class DynamoDBStorageAdapter {
 
   async updateClient(id, updates) {
     try {
-      // Get current client to merge updates
-      const current = await this.getClient(id);
-      if (!current) {
+      // Fetch current client in encrypted form to avoid re-encrypting decrypted data
+      const currentRawResult = await dynamoDb.get({
+        TableName: CLIENTS_TABLE,
+        Key: { id }
+      }).promise();
+      
+      const currentRaw = currentRawResult.Item;
+      if (!currentRaw) {
         throw new Error('Client not found');
       }
       
@@ -238,32 +243,26 @@ export class DynamoDBStorageAdapter {
         updatesToStore.ssh = encryptSSHCredentials(updatesToStore.ssh);
       }
       
-      // Merge updates with current client
-      const updated = {
-        ...current,
+      // Merge updates with current (keeping existing encrypted ssh if not updated)
+      const updatedRaw = {
+        ...currentRaw,
         ...updatesToStore,
         updatedAt: new Date().toISOString()
       };
       
-      // Re-encrypt existing SSH credentials if they were decrypted
-      if (updated.ssh && !updatesToStore.ssh) {
-        const { encryptSSHCredentials } = await import('../utils/encryption.js');
-        updated.ssh = encryptSSHCredentials(updated.ssh);
-      }
-      
-      // Use put instead of update to handle nested objects properly
       await dynamoDb.put({
         TableName: CLIENTS_TABLE,
-        Item: updated
+        Item: updatedRaw
       }).promise();
       
-      // Return client with decrypted credentials for API response
-      if (updated.ssh) {
+      // Prepare decrypted response
+      const updatedResponse = { ...updatedRaw };
+      if (updatedResponse.ssh) {
         const { decryptSSHCredentials } = await import('../utils/encryption.js');
-        updated.ssh = decryptSSHCredentials(updated.ssh);
+        updatedResponse.ssh = decryptSSHCredentials(updatedResponse.ssh);
       }
       
-      return updated;
+      return updatedResponse;
     } catch (error) {
       console.error('Error updating client in DynamoDB:', error);
       throw error;

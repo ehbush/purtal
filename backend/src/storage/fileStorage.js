@@ -151,15 +151,7 @@ export class FileStorageAdapter {
 
   async getClient(id) {
     const clients = await this.getClients();
-    const client = clients.find(c => c.id === id);
-    
-    // Decrypt SSH credentials when retrieving
-    if (client && client.ssh) {
-      const { decryptSSHCredentials } = await import('../utils/encryption.js');
-      client.ssh = decryptSSHCredentials(client.ssh);
-    }
-    
-    return client;
+    return clients.find(c => c.id === id);
   }
 
   async createClient(client) {
