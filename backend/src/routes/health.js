@@ -2,6 +2,7 @@ import express from 'express';
 import axios from 'axios';
 import cron from 'node-cron';
 import ping from 'ping';
+import { logError } from '../utils/logger.js';
 
 export const healthRouter = express.Router();
 
@@ -118,6 +119,11 @@ healthRouter.get('/:id', async (req, res) => {
     
     res.json(health);
   } catch (error) {
+    logError(error, {
+      route: '/api/health/:id',
+      method: 'GET',
+      serviceId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -138,6 +144,11 @@ healthRouter.get('/', async (req, res) => {
     const healthStatuses = await Promise.all(healthPromises);
     res.json(healthStatuses);
   } catch (error) {
+    logError(error, {
+      route: '/api/health/client/:id',
+      method: 'GET',
+      clientId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -249,6 +260,10 @@ healthRouter.get('/clients', async (req, res) => {
     const healthStatuses = await Promise.all(healthPromises);
     res.json(healthStatuses);
   } catch (error) {
+    logError(error, {
+      route: '/api/health/clients',
+      method: 'GET'
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -284,7 +299,11 @@ export function startHealthCheckScheduler(storage) {
           }
         }
       } catch (error) {
-        console.error('Error in health check scheduler:', error);
+        logError(error, {
+          route: 'health-check-scheduler',
+          method: 'CRON',
+          type: 'service-health-check'
+        });
       }
     }, { scheduled: true });
 
@@ -302,7 +321,11 @@ export function startHealthCheckScheduler(storage) {
           }
         }
       } catch (error) {
-        console.error('Error in client health check scheduler:', error);
+        logError(error, {
+          route: 'health-check-scheduler',
+          method: 'CRON',
+          type: 'client-health-check'
+        });
       }
     }, { scheduled: true });
   }

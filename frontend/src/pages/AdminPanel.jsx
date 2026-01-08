@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Save, X, Upload } from 'lucide-react';
 import api from '../utils/api';
 import { useSettings } from '../context/SettingsContext';
 import ClientsAdmin from './ClientsAdmin';
+import ErrorLogViewer from '../components/ErrorLogViewer';
 
 export default function AdminPanel() {
   const [services, setServices] = useState([]);
@@ -621,6 +622,11 @@ export default function AdminPanel() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Error Log Viewer */}
+      <div className="mt-8">
+        <ErrorLogViewer />
       </div>
     </div>
   );

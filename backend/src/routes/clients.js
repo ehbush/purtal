@@ -1,4 +1,5 @@
 import express from 'express';
+import { logError } from '../utils/logger.js';
 
 export const clientsRouter = express.Router();
 
@@ -25,6 +26,11 @@ clientsRouter.get('/:id', async (req, res) => {
     
     res.json(client);
   } catch (error) {
+    logError(error, {
+      route: '/api/clients/:id',
+      method: 'GET',
+      clientId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -36,6 +42,10 @@ clientsRouter.post('/', async (req, res) => {
     const client = await storage.createClient(req.body);
     res.status(201).json(client);
   } catch (error) {
+    logError(error, {
+      route: '/api/clients',
+      method: 'POST'
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -50,6 +60,11 @@ clientsRouter.put('/:id', async (req, res) => {
     if (error.message === 'Client not found') {
       return res.status(404).json({ error: error.message });
     }
+    logError(error, {
+      route: '/api/clients/:id',
+      method: 'PUT',
+      clientId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -64,6 +79,11 @@ clientsRouter.delete('/:id', async (req, res) => {
     if (error.message === 'Client not found') {
       return res.status(404).json({ error: error.message });
     }
+    logError(error, {
+      route: '/api/clients/:id',
+      method: 'DELETE',
+      clientId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });

@@ -1,5 +1,6 @@
 import { Client } from 'ssh2';
 import { decryptSSHCredentials } from '../utils/encryption.js';
+import { logError } from '../utils/logger.js';
 
 export function setupSSHRoutes(app) {
   // WebSocket endpoint for SSH connections
@@ -83,7 +84,12 @@ export function setupSSHRoutes(app) {
       });
       
       conn.on('error', (err) => {
-        console.error('SSH connection error:', err);
+        logError(err, {
+          route: '/api/ssh/:id/connect',
+          method: 'WS',
+          clientId: clientId,
+          clientName: client.name
+        });
         ws.send(JSON.stringify({ type: 'error', message: err.message }));
         ws.close();
       });
@@ -91,7 +97,11 @@ export function setupSSHRoutes(app) {
       conn.connect(sshConfig);
       
     } catch (error) {
-      console.error('SSH setup error:', error);
+      logError(error, {
+        route: '/api/ssh/:id/connect',
+        method: 'WS',
+        clientId: clientId
+      });
       ws.send(JSON.stringify({ type: 'error', message: error.message }));
       ws.close();
     }

@@ -1,7 +1,7 @@
 import { Power, Terminal, Server, Wifi, WifiOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import SSHTerminal from './SSHTerminal';
+import SSHTerminalModal from './SSHTerminalModal';
 
 export default function ClientCard({ client }) {
   const [wolLoading, setWolLoading] = useState(false);
@@ -154,10 +154,13 @@ export default function ClientCard({ client }) {
         </div>
       )}
       
-      {showSSH && client.ssh && client.ssh.enabled && (
-        <div className="mt-4">
-          <SSHTerminal clientId={client.id} clientName={client.name} />
-        </div>
+      {client.ssh && client.ssh.enabled && (
+        <SSHTerminalModal
+          clientId={client.id}
+          clientName={client.name}
+          isOpen={showSSH}
+          onClose={() => setShowSSH(false)}
+        />
       )}
     </div>
   );

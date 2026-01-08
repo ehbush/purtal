@@ -1,4 +1,5 @@
 import express from 'express';
+import { logError } from '../utils/logger.js';
 import dgram from 'dgram';
 
 export const wolRouter = express.Router();
@@ -53,7 +54,11 @@ wolRouter.post('/:id', async (req, res) => {
       socket.close();
       
       if (err) {
-        console.error('WOL error:', err);
+        logError(err, {
+          route: '/api/wol/:id',
+          method: 'POST',
+          clientId: req.params.id
+        });
         return res.status(500).json({ error: 'Failed to send WOL packet: ' + err.message });
       }
       
@@ -65,6 +70,11 @@ wolRouter.post('/:id', async (req, res) => {
       });
     });
   } catch (error) {
+    logError(error, {
+      route: '/api/wol/:id',
+      method: 'POST',
+      clientId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });

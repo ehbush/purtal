@@ -14,6 +14,8 @@ import { clientsRouter } from './routes/clients.js';
 import { wolRouter } from './routes/wol.js';
 import { setupSSHRoutes } from './routes/ssh.js';
 import { getSSLOptions, setupAcmeChallenge } from './ssl/config.js';
+import { errorsRouter } from './routes/errors.js';
+import { logError } from './utils/logger.js';
 
 dotenv.config();
 
@@ -29,6 +31,32 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(join(__dirname, '../../frontend/dist')));
 
+// Error logging middleware
+app.use((err, req, res, next) => {
+  logError(err, {
+    route: req.path,
+    method: req.method,
+    ip: req.ip || req.connection.remoteAddress,
+    userAgent: req.get('user-agent')
+  });
+  next(err);
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  logError(err, {
+    route: req.path,
+    method: req.method,
+    ip: req.ip || req.connection.remoteAddress,
+    userAgent: req.get('user-agent')
+  });
+  
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
 // Initialize storage adapter
 const storageAdapter = createStorageAdapter();
 app.locals.storage = storageAdapter;
@@ -42,6 +70,7 @@ app.use('/api/config', configRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/clients', clientsRouter);
 app.use('/api/wol', wolRouter);
+app.use('/api/errors', errorsRouter);
 
 // Setup SSH WebSocket routes
 setupSSHRoutes(app);

@@ -1,4 +1,5 @@
 import express from 'express';
+import { logError } from '../utils/logger.js';
 
 export const servicesRouter = express.Router();
 
@@ -25,6 +26,11 @@ servicesRouter.get('/:id', async (req, res) => {
     
     res.json(service);
   } catch (error) {
+    logError(error, {
+      route: '/api/services/:id',
+      method: 'GET',
+      serviceId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -36,6 +42,10 @@ servicesRouter.post('/', async (req, res) => {
     const service = await storage.createService(req.body);
     res.status(201).json(service);
   } catch (error) {
+    logError(error, {
+      route: '/api/services',
+      method: 'POST'
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -50,6 +60,11 @@ servicesRouter.put('/:id', async (req, res) => {
     if (error.message === 'Service not found') {
       return res.status(404).json({ error: error.message });
     }
+    logError(error, {
+      route: '/api/services/:id',
+      method: 'PUT',
+      serviceId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
@@ -64,6 +79,11 @@ servicesRouter.delete('/:id', async (req, res) => {
     if (error.message === 'Service not found') {
       return res.status(404).json({ error: error.message });
     }
+    logError(error, {
+      route: '/api/services/:id',
+      method: 'DELETE',
+      serviceId: req.params.id
+    });
     res.status(500).json({ error: error.message });
   }
 });
