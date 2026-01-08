@@ -40,7 +40,7 @@ export default function ServiceCard({ service, healthStatus }) {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        'block p-6 rounded-lg bg-gray-800/50 backdrop-blur-sm border-2 transition-all hover:scale-105 hover:shadow-lg',
+        'block p-6 rounded-lg bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border-2 transition-all hover:scale-105 hover:shadow-lg',
         getStatusColor()
       )}
     >
@@ -61,31 +61,42 @@ export default function ServiceCard({ service, healthStatus }) {
             </div>
           )}
           <div>
-            <h3 className="text-white font-semibold text-lg">{service.name}</h3>
-            {service.category && (
-              <span className="text-gray-400 text-sm">{service.category}</span>
-            )}
+            <h3 className="text-gray-900 dark:text-white font-semibold text-lg">{service.name}</h3>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              {service.category && (
+                <span className="text-gray-600 dark:text-gray-400 text-sm">{service.category}</span>
+              )}
+              {service.tags && service.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {service.tags.map(tag => (
+                    <span key={tag} className="px-1.5 py-0.5 bg-primary-600/20 text-primary-700 dark:text-primary-300 text-xs rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {getStatusIcon()}
-          <ExternalLink className="w-4 h-4 text-gray-400" />
+          <ExternalLink className="w-4 h-4 text-gray-600 dark:text-gray-400" />
         </div>
       </div>
       
       {service.description && (
-        <p className="text-gray-300 text-sm mb-3 line-clamp-2">{service.description}</p>
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-3 line-clamp-2">{service.description}</p>
       )}
       
       {healthStatus && healthStatus.status !== 'unknown' && (
-        <div className="mt-3 pt-3 border-t border-gray-700">
-          <div className="flex items-center justify-between text-xs text-gray-400">
-            <span>Status: {healthStatus.status}</span>
-            {healthStatus.lastChecked && (
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex items-center justify-between">
+              <span>Status: {healthStatus.status}</span>
               <span>
-                {new Date(healthStatus.lastChecked).toLocaleTimeString()}
+                Last seen: {healthStatus.lastSeen ? new Date(healthStatus.lastSeen).toLocaleString() : 'never'}
               </span>
-            )}
+            </div>
           </div>
         </div>
       )}

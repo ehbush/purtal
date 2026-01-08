@@ -19,11 +19,17 @@ export class FileStorageAdapter {
     if (!existsSync(CONFIG_FILE)) {
       this.writeConfig({
         services: [],
-        machines: [],
+        clients: [],
         settings: {
           title: 'Purtal',
           theme: 'default',
-          layout: 'grid'
+          layout: 'grid',
+          healthCheck: {
+            serviceFrequency: 30,
+            serviceTimeout: 5000,
+            clientFrequency: 60,
+            clientTimeout: 3
+          }
         }
       });
     }
@@ -125,66 +131,113 @@ export class FileStorageAdapter {
     return config.settings;
   }
 
-  // Machines/Devices methods
-  async getMachines() {
+  // Clients methods
+  async getClients() {
     const config = this.readConfig();
-    return config.machines || [];
-  }
-
-  async getMachine(id) {
-    const machines = await this.getMachines();
-    return machines.find(m => m.id === id);
-  }
-
-  async createMachine(machine) {
-    const config = this.readConfig();
-    const machines = config.machines || [];
+    const clients = config.clients || [];
     
-    const newMachine = {
-      id: machine.id || `machine-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      ...machine,
+    // Decrypt SSH credentials for all clients
+    const { decryptSSHCredentials } = await import('../utils/encryption.js');
+    return clients.map(client => {
+      if (client.ssh) {
+        return {
+          ...client,
+          ssh: decryptSSHCredentials(client.ssh)
+        };
+      }
+      return client;
+    });
+  }
+
+  async getClient(id) {
+    const clients = await this.getClients();
+    const client = clients.find(c => c.id === id);
+    
+    // Decrypt SSH credentials when retrieving
+    if (client && client.ssh) {
+      const { decryptSSHCredentials } = await import('../utils/encryption.js');
+      client.ssh = decryptSSHCredentials(client.ssh);
+    }
+    
+    return client;
+  }
+
+  async createClient(client) {
+    const config = this.readConfig();
+    const clients = config.clients || [];
+    
+    // Encrypt SSH credentials before storing
+    const clientToStore = { ...client };
+    if (clientToStore.ssh) {
+      const { encryptSSHCredentials } = await import('../utils/encryption.js');
+      clientToStore.ssh = encryptSSHCredentials(clientToStore.ssh);
+    }
+    
+    const newClient = {
+      id: client.id || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      ...clientToStore,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
-    machines.push(newMachine);
-    config.machines = machines;
+    clients.push(newClient);
+    config.clients = clients;
     this.writeConfig(config);
     
-    return newMachine;
-  }
-
-  async updateMachine(id, updates) {
-    const config = this.readConfig();
-    const machines = config.machines || [];
-    const index = machines.findIndex(m => m.id === id);
-    
-    if (index === -1) {
-      throw new Error('Machine not found');
+    // Return client with decrypted credentials for API response
+    if (newClient.ssh) {
+      const { decryptSSHCredentials } = await import('../utils/encryption.js');
+      newClient.ssh = decryptSSHCredentials(newClient.ssh);
     }
     
-    machines[index] = {
-      ...machines[index],
-      ...updates,
+    return newClient;
+  }
+
+  async updateClient(id, updates) {
+    const config = this.readConfig();
+    const clients = config.clients || [];
+    const index = clients.findIndex(c => c.id === id);
+    
+    if (index === -1) {
+      throw new Error('Client not found');
+    }
+    
+    // Encrypt SSH credentials before storing
+    const updatesToStore = { ...updates };
+    if (updatesToStore.ssh) {
+      const { encryptSSHCredentials } = await import('../utils/encryption.js');
+      updatesToStore.ssh = encryptSSHCredentials(updatesToStore.ssh);
+    }
+    
+    clients[index] = {
+      ...clients[index],
+      ...updatesToStore,
       updatedAt: new Date().toISOString()
     };
     
-    config.machines = machines;
+    config.clients = clients;
     this.writeConfig(config);
     
-    return machines[index];
-  }
-
-  async deleteMachine(id) {
-    const config = this.readConfig();
-    const machines = config.machines || [];
-    const filtered = machines.filter(m => m.id !== id);
-    
-    if (filtered.length === machines.length) {
-      throw new Error('Machine not found');
+    // Return client with decrypted credentials for API response
+    const updatedClient = { ...clients[index] };
+    if (updatedClient.ssh) {
+      const { decryptSSHCredentials } = await import('../utils/encryption.js');
+      updatedClient.ssh = decryptSSHCredentials(updatedClient.ssh);
     }
     
-    config.machines = filtered;
+    return updatedClient;
+  }
+
+  async deleteClient(id) {
+    const config = this.readConfig();
+    const clients = config.clients || [];
+    const filtered = clients.filter(c => c.id !== id);
+    
+    if (filtered.length === clients.length) {
+      throw new Error('Client not found');
+    }
+    
+    config.clients = filtered;
     this.writeConfig(config);
     
     return true;

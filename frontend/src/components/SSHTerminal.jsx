@@ -3,7 +3,7 @@ import { Terminal as XTerm } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 
-export default function SSHTerminal({ machineId, machineName }) {
+export default function SSHTerminal({ clientId, clientName }) {
   const terminalRef = useRef(null);
   const wsRef = useRef(null);
   const xtermRef = useRef(null);
@@ -36,7 +36,7 @@ export default function SSHTerminal({ machineId, machineName }) {
 
     // Connect WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/api/ssh/${machineId}/connect`;
+    const wsUrl = `${protocol}//${window.location.host}/api/ssh/${clientId}/connect`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -102,12 +102,12 @@ export default function SSHTerminal({ machineId, machineName }) {
       }
       xterm.dispose();
     };
-  }, [machineId]);
+  }, [clientId]);
 
   return (
     <div className="bg-black rounded-lg p-4 border border-gray-700">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-gray-400 text-sm">SSH Terminal - {machineName}</span>
+        <span className="text-gray-400 text-sm">SSH Terminal - {clientName}</span>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
           <span className="text-gray-400 text-xs">{connected ? 'Connected' : 'Disconnected'}</span>

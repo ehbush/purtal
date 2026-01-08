@@ -34,23 +34,23 @@ function createMagicPacket(macAddress) {
 wolRouter.post('/:id', async (req, res) => {
   try {
     const storage = req.app.locals.storage;
-    const machine = await storage.getMachine(req.params.id);
+    const client = await storage.getClient(req.params.id);
     
-    if (!machine) {
-      return res.status(404).json({ error: 'Machine not found' });
+    if (!client) {
+      return res.status(404).json({ error: 'Client not found' });
     }
     
-    if (!machine.macAddress) {
-      return res.status(400).json({ error: 'MAC address not configured for this machine' });
+    if (!client.macAddress) {
+      return res.status(400).json({ error: 'MAC address not configured for this client' });
     }
     
-    const magicPacket = createMagicPacket(machine.macAddress);
-    const client = dgram.createSocket('udp4');
-    const address = machine.wolAddress || '255.255.255.255';
-    const port = machine.wolPort || 9;
+    const magicPacket = createMagicPacket(client.macAddress);
+    const socket = dgram.createSocket('udp4');
+    const address = client.wolAddress || '255.255.255.255';
+    const port = client.wolPort || 9;
     
-    client.send(magicPacket, 0, magicPacket.length, port, address, (err) => {
-      client.close();
+    socket.send(magicPacket, 0, magicPacket.length, port, address, (err) => {
+      socket.close();
       
       if (err) {
         console.error('WOL error:', err);
@@ -59,8 +59,8 @@ wolRouter.post('/:id', async (req, res) => {
       
       res.json({ 
         success: true, 
-        message: `Wake on LAN packet sent to ${machine.name}`,
-        macAddress: machine.macAddress,
+        message: `Wake on LAN packet sent to ${client.name}`,
+        macAddress: client.macAddress,
         timestamp: new Date().toISOString()
       });
     });

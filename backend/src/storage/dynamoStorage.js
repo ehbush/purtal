@@ -7,7 +7,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient({
 
 const SERVICES_TABLE = process.env.DYNAMODB_SERVICES_TABLE || 'purtal-services';
 const SETTINGS_TABLE = process.env.DYNAMODB_SETTINGS_TABLE || 'purtal-settings';
-const MACHINES_TABLE = process.env.DYNAMODB_MACHINES_TABLE || 'purtal-machines';
+const CLIENTS_TABLE = process.env.DYNAMODB_CLIENTS_TABLE || 'purtal-clients';
 
 export class DynamoDBStorageAdapter {
   async getServices() {
@@ -141,99 +141,145 @@ export class DynamoDBStorageAdapter {
     }
   }
 
-  // Machines/Devices methods
-  async getMachines() {
+  // Clients methods
+  async getClients() {
     try {
       const result = await dynamoDb.scan({
-        TableName: MACHINES_TABLE
+        TableName: CLIENTS_TABLE
       }).promise();
       
-      return result.Items || [];
+      const clients = result.Items || [];
+      
+      // Decrypt SSH credentials for all clients
+      const { decryptSSHCredentials } = await import('../utils/encryption.js');
+      return clients.map(client => {
+        if (client.ssh) {
+          return {
+            ...client,
+            ssh: decryptSSHCredentials(client.ssh)
+          };
+        }
+        return client;
+      });
     } catch (error) {
-      console.error('Error reading machines from DynamoDB:', error);
+      console.error('Error reading clients from DynamoDB:', error);
       return [];
     }
   }
 
-  async getMachine(id) {
+  async getClient(id) {
     try {
       const result = await dynamoDb.get({
-        TableName: MACHINES_TABLE,
+        TableName: CLIENTS_TABLE,
         Key: { id }
       }).promise();
       
-      return result.Item || null;
+      const client = result.Item || null;
+      
+      // Decrypt SSH credentials when retrieving
+      if (client && client.ssh) {
+        const { decryptSSHCredentials } = await import('../utils/encryption.js');
+        client.ssh = decryptSSHCredentials(client.ssh);
+      }
+      
+      return client;
     } catch (error) {
-      console.error('Error reading machine from DynamoDB:', error);
+      console.error('Error reading client from DynamoDB:', error);
       return null;
     }
   }
 
-  async createMachine(machine) {
-    const newMachine = {
-      id: machine.id || `machine-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      ...machine,
+  async createClient(client) {
+    // Encrypt SSH credentials before storing
+    const clientToStore = { ...client };
+    if (clientToStore.ssh) {
+      const { encryptSSHCredentials } = await import('../utils/encryption.js');
+      clientToStore.ssh = encryptSSHCredentials(clientToStore.ssh);
+    }
+    
+    const newClient = {
+      id: client.id || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      ...clientToStore,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     
     try {
       await dynamoDb.put({
-        TableName: MACHINES_TABLE,
-        Item: newMachine
+        TableName: CLIENTS_TABLE,
+        Item: newClient
       }).promise();
       
-      return newMachine;
+      // Return client with decrypted credentials for API response
+      if (newClient.ssh) {
+        const { decryptSSHCredentials } = await import('../utils/encryption.js');
+        newClient.ssh = decryptSSHCredentials(newClient.ssh);
+      }
+      
+      return newClient;
     } catch (error) {
-      console.error('Error creating machine in DynamoDB:', error);
+      console.error('Error creating client in DynamoDB:', error);
       throw error;
     }
   }
 
-  async updateMachine(id, updates) {
-    const updateExpression = [];
-    const expressionAttributeNames = {};
-    const expressionAttributeValues = {};
-    
-    Object.keys(updates).forEach((key, index) => {
-      const nameKey = `#attr${index}`;
-      const valueKey = `:val${index}`;
-      updateExpression.push(`${nameKey} = ${valueKey}`);
-      expressionAttributeNames[nameKey] = key;
-      expressionAttributeValues[valueKey] = updates[key];
-    });
-    
-    updateExpression.push('#updatedAt = :updatedAt');
-    expressionAttributeNames['#updatedAt'] = 'updatedAt';
-    expressionAttributeValues[':updatedAt'] = new Date().toISOString();
-    
+  async updateClient(id, updates) {
     try {
-      const result = await dynamoDb.update({
-        TableName: MACHINES_TABLE,
-        Key: { id },
-        UpdateExpression: `SET ${updateExpression.join(', ')}`,
-        ExpressionAttributeNames: expressionAttributeNames,
-        ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: 'ALL_NEW'
+      // Get current client to merge updates
+      const current = await this.getClient(id);
+      if (!current) {
+        throw new Error('Client not found');
+      }
+      
+      // Encrypt SSH credentials before storing
+      const updatesToStore = { ...updates };
+      if (updatesToStore.ssh) {
+        const { encryptSSHCredentials } = await import('../utils/encryption.js');
+        updatesToStore.ssh = encryptSSHCredentials(updatesToStore.ssh);
+      }
+      
+      // Merge updates with current client
+      const updated = {
+        ...current,
+        ...updatesToStore,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Re-encrypt existing SSH credentials if they were decrypted
+      if (updated.ssh && !updatesToStore.ssh) {
+        const { encryptSSHCredentials } = await import('../utils/encryption.js');
+        updated.ssh = encryptSSHCredentials(updated.ssh);
+      }
+      
+      // Use put instead of update to handle nested objects properly
+      await dynamoDb.put({
+        TableName: CLIENTS_TABLE,
+        Item: updated
       }).promise();
       
-      return result.Attributes;
+      // Return client with decrypted credentials for API response
+      if (updated.ssh) {
+        const { decryptSSHCredentials } = await import('../utils/encryption.js');
+        updated.ssh = decryptSSHCredentials(updated.ssh);
+      }
+      
+      return updated;
     } catch (error) {
-      console.error('Error updating machine in DynamoDB:', error);
+      console.error('Error updating client in DynamoDB:', error);
       throw error;
     }
   }
 
-  async deleteMachine(id) {
+  async deleteClient(id) {
     try {
       await dynamoDb.delete({
-        TableName: MACHINES_TABLE,
+        TableName: CLIENTS_TABLE,
         Key: { id }
       }).promise();
       
       return true;
     } catch (error) {
-      console.error('Error deleting machine from DynamoDB:', error);
+      console.error('Error deleting client from DynamoDB:', error);
       throw error;
     }
   }

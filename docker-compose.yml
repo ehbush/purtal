@@ -5,8 +5,9 @@ services:
     build: .
     ports:
       - "3001:3001"
-      - "80:80"   # HTTP (for Let's Encrypt challenges or redirects)
-      - "443:443" # HTTPS (when SSL is enabled)
+      # Uncomment for SSL/Let's Encrypt (requires admin privileges on Windows)
+      # - "80:80"   # HTTP (for Let's Encrypt challenges or redirects)
+      # - "443:443" # HTTPS (when SSL is enabled)
     environment:
       - PORT=3001
       - STORAGE_TYPE=file

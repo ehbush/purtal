@@ -10,7 +10,7 @@ import { createStorageAdapter } from './storage/adapter.js';
 import { servicesRouter } from './routes/services.js';
 import { configRouter } from './routes/config.js';
 import { healthRouter, startHealthCheckScheduler } from './routes/health.js';
-import { machinesRouter } from './routes/machines.js';
+import { clientsRouter } from './routes/clients.js';
 import { wolRouter } from './routes/wol.js';
 import { setupSSHRoutes } from './routes/ssh.js';
 import { getSSLOptions, setupAcmeChallenge } from './ssl/config.js';
@@ -40,7 +40,7 @@ startHealthCheckScheduler(storageAdapter);
 app.use('/api/services', servicesRouter);
 app.use('/api/config', configRouter);
 app.use('/api/health', healthRouter);
-app.use('/api/machines', machinesRouter);
+app.use('/api/clients', clientsRouter);
 app.use('/api/wol', wolRouter);
 
 // Setup SSH WebSocket routes

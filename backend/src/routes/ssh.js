@@ -1,38 +1,42 @@
 import { Client } from 'ssh2';
+import { decryptSSHCredentials } from '../utils/encryption.js';
 
 export function setupSSHRoutes(app) {
   // WebSocket endpoint for SSH connections
   app.ws('/api/ssh/:id/connect', async (ws, req) => {
-    const machineId = req.params.id;
+    const clientId = req.params.id;
     const storage = req.app.locals.storage;
     
     try {
-      const machine = await storage.getMachine(machineId);
+      const client = await storage.getClient(clientId);
       
-      if (!machine) {
-        ws.close(1008, 'Machine not found');
+      if (!client) {
+        ws.close(1008, 'Client not found');
         return;
       }
       
-      if (!machine.ssh || !machine.ssh.enabled) {
-        ws.close(1008, 'SSH not enabled for this machine');
+      if (!client.ssh || !client.ssh.enabled) {
+        ws.close(1008, 'SSH not enabled for this client');
         return;
       }
+      
+      // Decrypt SSH credentials (storage should already decrypt, but double-check)
+      const decryptedSSH = decryptSSHCredentials(client.ssh);
       
       const sshConfig = {
-        host: machine.ssh.host || machine.ipAddress,
-        port: machine.ssh.port || 22,
-        username: machine.ssh.username,
-        ...(machine.ssh.password && { password: machine.ssh.password }),
-        ...(machine.ssh.privateKey && { privateKey: machine.ssh.privateKey }),
-        ...(machine.ssh.passphrase && { passphrase: machine.ssh.passphrase }),
+        host: decryptedSSH.host || client.ipAddress,
+        port: decryptedSSH.port || 22,
+        username: decryptedSSH.username,
+        ...(decryptedSSH.password && { password: decryptedSSH.password }),
+        ...(decryptedSSH.privateKey && { privateKey: decryptedSSH.privateKey }),
+        ...(decryptedSSH.passphrase && { passphrase: decryptedSSH.passphrase }),
         readyTimeout: 20000
       };
       
       const conn = new Client();
       
       conn.on('ready', () => {
-        console.log(`SSH connection established to ${machine.name}`);
+        console.log(`SSH connection established to ${client.name}`);
         ws.send(JSON.stringify({ type: 'connected', message: 'SSH connection established' }));
         
         conn.shell((err, stream) => {

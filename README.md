@@ -5,7 +5,7 @@ A modern, customizable homepage for your services and bookmarks with service man
 ## Features
 
 - 🎨 Modern, visually appealing UI with dark theme
-- ⚙️ Built-in admin panel for managing services/bookmarks and machines
+- ⚙️ Built-in admin panel for managing services/bookmarks and clients
 - 🔍 Health checking with service status monitoring
 - 🎯 Custom icons support (URL or file upload)
 - 💻 **Wake on LAN (WOL)**: Send magic packets to wake up remote devices
@@ -32,7 +32,14 @@ cd purtal
 docker-compose up -d
 ```
 
-3. Access the portal at `http://localhost:3001`
+3. **Set the encryption key** (required for SSH features):
+   ```bash
+   # Generate a secure key
+   openssl rand -hex 32
+   # Add to your .env file or docker-compose.yml
+   ```
+
+4. Access the portal at `http://localhost:3001`
 
 ### Manual Installation
 
@@ -49,6 +56,39 @@ npm run dev
 ```
 
 3. Access the portal at `http://localhost:3000`
+
+## Security
+
+**IMPORTANT**: SSH credentials (passwords, private keys, and passphrases) are encrypted at rest using AES-256-GCM encryption. You **MUST** set the `ENCRYPTION_KEY` environment variable before using SSH features.
+
+### Generating an Encryption Key
+
+Generate a secure encryption key using one of these methods:
+
+**Option 1: Generate a random hex key (recommended)**
+```bash
+openssl rand -hex 32
+```
+
+**Option 2: Use a strong password**
+The system will derive a key from your password using PBKDF2, but a random hex key is more secure.
+
+**⚠️ WARNING**: 
+- Store your encryption key securely (e.g., in a password manager or secrets management system)
+- If you lose the encryption key, all encrypted SSH credentials will be unrecoverable
+- Never commit the encryption key to version control
+- Use different keys for different environments (development, staging, production)
+
+Add the key to your `.env` file:
+```bash
+ENCRYPTION_KEY=your-generated-key-here
+```
+
+Or in `docker-compose.yml`:
+```yaml
+environment:
+  - ENCRYPTION_KEY=your-generated-key-here
+```
 
 ## Configuration
 
@@ -117,7 +157,7 @@ AWS_ACCESS_KEY_ID=your-key
 AWS_SECRET_ACCESS_KEY=your-secret
 DYNAMODB_SERVICES_TABLE=purtal-services
 DYNAMODB_SETTINGS_TABLE=purtal-settings
-DYNAMODB_MACHINES_TABLE=purtal-machines
+DYNAMODB_CLIENTS_TABLE=purtal-clients
 ```
 
 2. Create DynamoDB tables:
@@ -135,7 +175,7 @@ aws dynamodb create-table \
   --billing-mode PAY_PER_REQUEST
 
 aws dynamodb create-table \
-  --table-name purtal-machines \
+  --table-name purtal-clients \
   --attribute-definitions AttributeName=id,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST
@@ -164,21 +204,27 @@ DATA_DIR=./data
    - **Category**: Optional category for grouping
    - **Icon**: URL to an icon image, or upload a custom icon
 
-### Adding Machines
+### Adding Clients
 
-Machines are physical devices that support Wake on LAN and/or SSH access:
+Clients are physical devices that support Wake on LAN, SSH access, and/or health checking:
 
 1. Navigate to the Admin Panel
-2. In the "Machines" section, click "Add Machine"
-3. Fill in the machine details:
+2. In the "Clients" section, click "Add Client"
+3. Fill in the client details:
    - **Name**: Display name for the machine
    - **IP Address**: Network IP address
-   - **MAC Address**: Required for Wake on LAN functionality
-   - **WOL Configuration**: Broadcast address and port (defaults provided)
-   - **SSH Configuration** (optional):
-     - Enable SSH access
-     - Configure host, port, username
-     - Use password or private key authentication
+  - **Type**: Select "Health Check (Ping)" to enable ping-based health monitoring
+  - **MAC Address**: Required for Wake on LAN functionality
+  - **WOL Configuration**: Broadcast address and port (defaults provided)
+  - **SSH Configuration** (optional):
+    - Enable SSH access
+    - Configure host, port, username
+    - Use password or private key authentication
+
+**Health Check Type:**
+- When type is set to "health-check", the client will be monitored via ICMP ping
+- Status will show as "online" if ping succeeds, "offline" if it fails
+- Health checks run automatically every 60 seconds
 
 ### Advanced Configuration
 
@@ -239,15 +285,15 @@ The frontend will be built to `frontend/dist` and the backend will serve it.
 - `PUT /api/services/:id` - Update a service
 - `DELETE /api/services/:id` - Delete a service
 
-### Machines
-- `GET /api/machines` - Get all machines
-- `GET /api/machines/:id` - Get a specific machine
-- `POST /api/machines` - Create a new machine
-- `PUT /api/machines/:id` - Update a machine
-- `DELETE /api/machines/:id` - Delete a machine
+### Clients
+- `GET /api/clients` - Get all clients
+- `GET /api/clients/:id` - Get a specific client
+- `POST /api/clients` - Create a new client
+- `PUT /api/clients/:id` - Update a client
+- `DELETE /api/clients/:id` - Delete a client
 
 ### Wake on LAN
-- `POST /api/wol/:id` - Send Wake on LAN packet to a machine
+- `POST /api/wol/:id` - Send Wake on LAN packet to a client
 
 ### SSH
 - `WS /api/ssh/:id/connect` - WebSocket endpoint for SSH terminal connections
@@ -259,6 +305,8 @@ The frontend will be built to `frontend/dist` and the backend will serve it.
 ### Health Checks
 - `GET /api/health` - Get health status for all services
 - `GET /api/health/:id` - Get health status for a specific service
+- `GET /api/health/clients` - Get health status for all clients with health-check type
+- `GET /api/health/client/:id` - Get health status for a specific client
 
 ## License
 
