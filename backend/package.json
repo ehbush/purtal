@@ -1,0 +1,23 @@
+{
+  "name": "purtal-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "build": "echo 'No build step needed for Node.js'",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "aws-sdk": "^2.1500.0",
+    "node-cron": "^3.0.3",
+    "axios": "^1.6.2",
+    "ssh2": "^1.15.0",
+    "ws": "^8.14.2",
+    "express-ws": "^5.0.2",
+    "acme-client": "^4.2.5"
+  }
+}

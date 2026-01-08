@@ -15,7 +15,9 @@ build/
 
 # Data files
 data/
-*.json
+# Ignore data JSON files but keep package.json
+!package.json
+!**/package.json
 
 # SSL Certificates
 certs/
