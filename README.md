@@ -1,5 +1,7 @@
 # Purtal
 
+![Purtal Icon](https://ehbush.s3.us-west-2.amazonaws.com/images/Purtal.png)
+
 A modern, customizable homepage for your services and bookmarks with service management, health checking, and an admin panel.
 
 ## Features
