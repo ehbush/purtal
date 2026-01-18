@@ -66,7 +66,7 @@ export default function ClientCard({ client }) {
   };
 
   return (
-    <div className={`bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border-2 transition-all hover:scale-105 hover:shadow-lg ${getStatusColor()}`}>
+    <div className={`bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border-2 transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary-500/20 ${getStatusColor()}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {client.customIcon || client.icon ? (
@@ -79,7 +79,7 @@ export default function ClientCard({ client }) {
               }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+            <div className="w-12 h-12 rounded-lg bg-gradient-purtal flex items-center justify-center text-white shadow-lg shadow-primary-500/50">
               <Server className="w-6 h-6" />
             </div>
           )}
@@ -100,7 +100,7 @@ export default function ClientCard({ client }) {
               {client.tags && client.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {client.tags.map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 bg-primary-600/20 text-primary-700 dark:text-primary-300 text-xs rounded">
+                    <span key={tag} className="px-1.5 py-0.5 bg-gradient-purtal-subtle text-primary-600 dark:text-primary-300 text-xs rounded border border-primary-500/30">
                       {tag}
                     </span>
                   ))}
@@ -123,7 +123,7 @@ export default function ClientCard({ client }) {
           <button
             onClick={handleWakeOnLAN}
             disabled={wolLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
+            className="px-4 py-2 bg-gradient-purtal hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center gap-2 text-sm transition-all shadow-lg shadow-primary-500/50"
           >
             <Power className="w-4 h-4" />
             {wolLoading ? 'Sending...' : 'Wake on LAN'}
@@ -133,7 +133,7 @@ export default function ClientCard({ client }) {
         {client.ssh && client.ssh.enabled && (
           <button
             onClick={() => setShowSSH(!showSSH)}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 text-sm transition-colors"
+            className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 hover:opacity-90 text-white rounded-lg flex items-center gap-2 text-sm transition-all shadow-lg shadow-secondary-500/50"
           >
             <Terminal className="w-4 h-4" />
             {showSSH ? 'Close SSH' : 'Open SSH'}
@@ -142,7 +142,7 @@ export default function ClientCard({ client }) {
       </div>
       
       {healthStatus && healthStatus.status !== 'unknown' && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-border">
           <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center justify-between">
               <span>Status: {healthStatus.status}</span>

@@ -49,7 +49,7 @@ export default function ErrorLogViewer() {
 
   if (errors.length === 0 && !loading) {
     return (
-      <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-green-500" />
@@ -132,7 +132,7 @@ export default function ErrorLogViewer() {
                 {error.stack && (
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Stack Trace:</p>
-                    <pre className="text-xs bg-gray-900 text-gray-300 p-2 rounded overflow-x-auto">
+                    <pre className="text-xs bg-dark-bg text-gray-300 p-2 rounded overflow-x-auto border border-dark-border">
                       {error.stack}
                     </pre>
                   </div>
@@ -140,7 +140,7 @@ export default function ErrorLogViewer() {
                 {error.context && Object.keys(error.context).length > 0 && (
                   <div>
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Context:</p>
-                    <pre className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-2 rounded overflow-x-auto">
+                    <pre className="text-xs bg-gray-100 dark:bg-dark-surface text-gray-800 dark:text-gray-200 p-2 rounded overflow-x-auto border border-gray-200 dark:border-dark-border">
                       {JSON.stringify(error.context, null, 2)}
                     </pre>
                   </div>

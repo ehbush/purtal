@@ -40,7 +40,7 @@ export default function ServiceCard({ service, healthStatus }) {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        'block p-6 rounded-lg bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm border-2 transition-all hover:scale-105 hover:shadow-lg',
+        'block p-6 rounded-lg bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm border-2 transition-all hover:scale-105 hover:shadow-lg hover:shadow-primary-500/20',
         getStatusColor()
       )}
     >
@@ -56,7 +56,7 @@ export default function ServiceCard({ service, healthStatus }) {
               }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold text-xl">
+            <div className="w-12 h-12 rounded-lg bg-gradient-purtal flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary-500/50">
               {service.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -69,7 +69,7 @@ export default function ServiceCard({ service, healthStatus }) {
               {service.tags && service.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {service.tags.map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 bg-primary-600/20 text-primary-700 dark:text-primary-300 text-xs rounded">
+                    <span key={tag} className="px-1.5 py-0.5 bg-gradient-purtal-subtle text-primary-600 dark:text-primary-300 text-xs rounded border border-primary-500/30">
                       {tag}
                     </span>
                   ))}
@@ -89,7 +89,7 @@ export default function ServiceCard({ service, healthStatus }) {
       )}
       
       {healthStatus && healthStatus.status !== 'unknown' && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-border">
           <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center justify-between">
               <span>Status: {healthStatus.status}</span>

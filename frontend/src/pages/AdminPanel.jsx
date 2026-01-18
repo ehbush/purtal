@@ -172,7 +172,7 @@ export default function AdminPanel() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Panel</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2"
+          className="px-4 py-2 bg-gradient-purtal hover:opacity-90 text-white rounded-lg flex items-center gap-2 shadow-lg shadow-primary-500/50"
         >
           <Plus className="w-5 h-5" />
           Add Service
@@ -180,7 +180,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Settings Section */}
-      <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Portal Settings</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -298,7 +298,7 @@ export default function AdminPanel() {
 
       {/* Service Form */}
       {showForm && (
-        <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {editingService ? 'Edit Service' : 'Add New Service'}
@@ -403,7 +403,7 @@ export default function AdminPanel() {
                   {formData.tags.map(tag => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-sm rounded"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-purtal text-white text-sm rounded shadow-md shadow-primary-500/50"
                     >
                       {tag}
                       <button
@@ -472,7 +472,7 @@ export default function AdminPanel() {
               </div>
 
               {advancedMode && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-dark-bg/50 p-4 rounded-lg">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Health Check URL
@@ -547,7 +547,7 @@ export default function AdminPanel() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-purtal hover:opacity-90 text-white rounded-lg flex items-center gap-2 shadow-lg shadow-primary-500/50"
               >
                 <Save className="w-5 h-5" />
                 {editingService ? 'Update' : 'Create'} Service
@@ -561,7 +561,7 @@ export default function AdminPanel() {
       <ClientsAdmin />
 
       {/* Services List */}
-      <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Services ({Array.isArray(services) ? services.length : 0})</h2>
         {!Array.isArray(services) || services.length === 0 ? (
           <p className="text-gray-600 dark:text-gray-400">No services configured. Add your first service above.</p>
@@ -570,7 +570,7 @@ export default function AdminPanel() {
             {services.map(service => (
               <div
                 key={service.id}
-                className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between"
+                className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 border border-gray-200 dark:border-dark-border flex items-center justify-between"
               >
                 <div className="flex items-center gap-4 flex-1">
                   {service.customIcon || service.icon ? (
@@ -583,7 +583,7 @@ export default function AdminPanel() {
                       }}
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center text-white font-bold">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-purtal flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/50">
                       {service.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -597,7 +597,7 @@ export default function AdminPanel() {
                         </span>
                       )}
                       {service.tags && service.tags.length > 0 && service.tags.map(tag => (
-                        <span key={tag} className="inline-block px-2 py-1 bg-primary-600/20 text-primary-700 dark:text-primary-300 text-xs rounded">
+                        <span key={tag} className="inline-block px-2 py-1 bg-gradient-purtal-subtle text-primary-600 dark:text-primary-300 text-xs rounded border border-primary-500/30">
                           {tag}
                         </span>
                       ))}

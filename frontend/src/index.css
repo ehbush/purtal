@@ -13,11 +13,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Default to dark theme */
+/* Default to dark theme - matching logo colors */
 :root {
   color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #0a0e27; /* Very dark blue matching logo background */
 }
 
 /* Light theme - when dark class is removed */

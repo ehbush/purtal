@@ -103,7 +103,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Tag Filter */}
       {allTags.length > 0 && (
-        <div className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-4 border border-gray-200 dark:border-dark-border">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Filter by Tags:</h3>
           <div className="flex flex-wrap gap-2">
             {allTags.map(tag => (
@@ -112,7 +112,7 @@ export default function Dashboard() {
                 onClick={() => toggleTag(tag)}
                 className={`px-3 py-1 rounded-full text-sm transition-colors ${
                   selectedTags.includes(tag)
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-gradient-purtal text-white shadow-lg shadow-primary-500/50'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -167,14 +167,14 @@ export default function Dashboard() {
           {selectedTags.length > 0 ? (
             <button
               onClick={() => setSelectedTags([])}
-              className="text-primary-400 hover:text-primary-300 underline"
+              className="text-primary-400 hover:text-accent-cyan underline"
             >
               Clear filters
             </button>
           ) : (
             <a
               href="/admin"
-              className="text-primary-400 hover:text-primary-300 underline"
+              className="text-primary-400 hover:text-accent-cyan underline"
             >
               Go to Admin Panel to add services and clients
             </a>

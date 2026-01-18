@@ -176,7 +176,7 @@ export default function ClientsAdmin() {
 
       {/* Client Form */}
       {showForm && (
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+        <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold text-white">
               {editingClient ? 'Edit Client' : 'Add New Client'}
@@ -283,7 +283,7 @@ export default function ClientsAdmin() {
                   {formData.tags.map(tag => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-primary-600 text-white text-sm rounded"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-gradient-purtal text-white text-sm rounded shadow-md shadow-primary-500/50"
                     >
                       {tag}
                       <button
@@ -358,7 +358,7 @@ export default function ClientsAdmin() {
             </div>
 
             {formData.macAddress && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-dark-bg/50 p-4 rounded-lg">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     WOL Broadcast Address
@@ -406,7 +406,7 @@ export default function ClientsAdmin() {
               </div>
 
               {sshEnabled && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-dark-bg/50 p-4 rounded-lg">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       SSH Host
@@ -521,7 +521,7 @@ export default function ClientsAdmin() {
       )}
 
       {/* Clients List */}
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg p-6 border border-gray-700">
+      <div className="bg-white/80 dark:bg-dark-surface/50 backdrop-blur-sm rounded-lg p-6 border border-gray-200 dark:border-dark-border">
         <h3 className="text-xl font-semibold text-white mb-4">Clients ({Array.isArray(clients) ? clients.length : 0})</h3>
         {!Array.isArray(clients) || clients.length === 0 ? (
           <p className="text-gray-400 dark:text-gray-400 light:text-gray-600">No clients configured. Add your first client above.</p>
@@ -530,7 +530,7 @@ export default function ClientsAdmin() {
             {clients.map(client => (
               <div
                 key={client.id}
-                className="bg-gray-900/50 dark:bg-gray-900/50 light:bg-gray-50 rounded-lg p-4 border border-gray-700 dark:border-gray-700 light:border-gray-200 flex items-center justify-between"
+                className="bg-gray-50 dark:bg-dark-bg/50 rounded-lg p-4 border border-gray-200 dark:border-dark-border flex items-center justify-between"
               >
                 <div className="flex items-center gap-4 flex-1">
                   <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
@@ -559,7 +559,7 @@ export default function ClientsAdmin() {
                         </span>
                       )}
                       {client.tags && client.tags.length > 0 && client.tags.map(tag => (
-                        <span key={tag} className="inline-block px-2 py-1 bg-primary-600/20 text-primary-700 dark:text-primary-300 text-xs rounded">
+                        <span key={tag} className="inline-block px-2 py-1 bg-gradient-purtal-subtle text-primary-600 dark:text-primary-300 text-xs rounded border border-primary-500/30">
                           {tag}
                         </span>
                       ))}

@@ -129,7 +129,7 @@ export default function SSHTerminalModal({ clientId, clientName, isOpen, onClose
   const modalContent = (
     <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="absolute inset-4 bg-gray-900 rounded-lg shadow-2xl flex flex-col"
+        className="absolute inset-4 bg-dark-bg rounded-lg shadow-2xl flex flex-col border border-dark-border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -143,7 +143,7 @@ export default function SSHTerminalModal({ clientId, clientName, isOpen, onClose
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition-colors"
+            className="p-2 hover:bg-dark-surface rounded-lg text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
