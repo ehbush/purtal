@@ -1,4 +1,10 @@
 import crypto from 'crypto';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16; // For GCM, this is 12, but we'll use 16 for compatibility
@@ -6,29 +12,100 @@ const SALT_LENGTH = 64;
 const TAG_LENGTH = 16;
 const KEY_LENGTH = 32; // 256 bits
 
+// Get data directory from environment or use default
+const DATA_DIR = process.env.DATA_DIR || join(__dirname, '../../data');
+const KEY_FILE = join(DATA_DIR, '.encryption_key');
+
 /**
- * Get the encryption key from environment variable
- * If not set, throws an error (security requirement)
+ * Generate a new encryption key (32 bytes = 64 hex characters)
+ * @returns {string} Hex-encoded encryption key
  */
-function getEncryptionKey() {
-  const key = process.env.ENCRYPTION_KEY;
-  if (!key) {
-    throw new Error('ENCRYPTION_KEY environment variable is required for SSH credential encryption');
+function generateEncryptionKey() {
+  return crypto.randomBytes(KEY_LENGTH).toString('hex');
+}
+
+/**
+ * Get or create the encryption key
+ * Priority: 1) ENV var, 2) Key file, 3) Generate new key and save to file
+ * @returns {Buffer} Encryption key as Buffer
+ */
+function getOrCreateEncryptionKey() {
+  // Priority 1: Check environment variable (allows manual override)
+  const envKey = process.env.ENCRYPTION_KEY;
+  if (envKey) {
+    // If the key is provided as a hex string, convert it
+    // Otherwise, derive a key from it using PBKDF2
+    if (envKey.length === 64) {
+      // Assume it's a hex-encoded 32-byte key
+      try {
+        return Buffer.from(envKey, 'hex');
+      } catch (e) {
+        // Not valid hex, derive key instead
+      }
+    }
+    
+    // Derive a key from the provided string using PBKDF2
+    return crypto.pbkdf2Sync(envKey, 'purtal-ssh-encryption-salt', 100000, KEY_LENGTH, 'sha256');
   }
   
-  // If the key is provided as a hex string, convert it
-  // Otherwise, derive a key from it using PBKDF2
-  if (key.length === 64) {
-    // Assume it's a hex-encoded 32-byte key
+  // Priority 2: Check for existing key file
+  if (existsSync(KEY_FILE)) {
     try {
-      return Buffer.from(key, 'hex');
-    } catch (e) {
-      // Not valid hex, derive key instead
+      const keyHex = readFileSync(KEY_FILE, 'utf8').trim();
+      if (keyHex.length === 64) {
+        return Buffer.from(keyHex, 'hex');
+      } else {
+        console.warn('Encryption key file exists but has invalid format. Generating new key...');
+      }
+    } catch (error) {
+      console.error('Error reading encryption key file:', error);
+      console.warn('Generating new encryption key...');
     }
   }
   
-  // Derive a key from the provided string using PBKDF2
-  return crypto.pbkdf2Sync(key, 'purtal-ssh-encryption-salt', 100000, KEY_LENGTH, 'sha256');
+  // Priority 3: Generate new key and save to file
+  try {
+    // Ensure data directory exists
+    if (!existsSync(DATA_DIR)) {
+      mkdirSync(DATA_DIR, { recursive: true });
+    }
+    
+    // Generate new key
+    const newKey = generateEncryptionKey();
+    
+    // Write key to file
+    writeFileSync(KEY_FILE, newKey, { mode: 0o600 }); // Read/write for owner only
+    
+    // Try to set file permissions (works on Unix-like systems)
+    try {
+      chmodSync(KEY_FILE, 0o600);
+    } catch (chmodError) {
+      // chmod may fail on Windows, but that's okay - the file mode in writeFileSync should help
+      if (process.platform !== 'win32') {
+        console.warn('Could not set encryption key file permissions:', chmodError.message);
+      }
+    }
+    
+    console.log('Generated new encryption key and saved to:', KEY_FILE);
+    console.log('⚠️  IMPORTANT: Keep this key file secure! If lost, encrypted SSH credentials cannot be recovered.');
+    
+    return Buffer.from(newKey, 'hex');
+  } catch (error) {
+    console.error('Failed to generate or save encryption key:', error);
+    throw new Error('Failed to initialize encryption key. Please check file system permissions.');
+  }
+}
+
+/**
+ * Get the encryption key (cached version for performance)
+ * The key is loaded once and cached in memory
+ */
+let cachedKey = null;
+function getEncryptionKey() {
+  if (!cachedKey) {
+    cachedKey = getOrCreateEncryptionKey();
+  }
+  return cachedKey;
 }
 
 /**

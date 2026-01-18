@@ -32,14 +32,9 @@ cd purtal
 docker-compose up -d
 ```
 
-3. **Set the encryption key** (required for SSH features):
-   ```bash
-   # Generate a secure key
-   openssl rand -hex 32
-   # Add to your .env file or docker-compose.yml
-   ```
+3. Access the portal at `http://localhost:3001`
 
-4. Access the portal at `http://localhost:3001`
+   **Note:** An encryption key for SSH credentials will be automatically generated on first run and saved to `DATA_DIR/.encryption_key`. You can optionally set `ENCRYPTION_KEY` in your environment to use a custom key.
 
 ### Manual Installation
 
@@ -59,11 +54,20 @@ npm run dev
 
 ## Security
 
-**IMPORTANT**: SSH credentials (passwords, private keys, and passphrases) are encrypted at rest using AES-256-GCM encryption. You **MUST** set the `ENCRYPTION_KEY` environment variable before using SSH features.
+**IMPORTANT**: SSH credentials (passwords, private keys, and passphrases) are encrypted at rest using AES-256-GCM encryption.
 
-### Generating an Encryption Key
+### Encryption Key Management
 
-Generate a secure encryption key using one of these methods:
+The application automatically generates a secure encryption key on first run and saves it to `DATA_DIR/.encryption_key`. This key is used to encrypt all SSH credentials stored in the system.
+
+**Automatic Key Generation (Default):**
+- On first startup, a 256-bit encryption key is automatically generated
+- The key is saved to `DATA_DIR/.encryption_key` with restricted permissions (600)
+- No user intervention is required
+- The key file is automatically loaded on subsequent startups
+
+**Manual Key Configuration (Optional):**
+If you prefer to set your own encryption key, you can set the `ENCRYPTION_KEY` environment variable:
 
 **Option 1: Generate a random hex key (recommended)**
 ```bash
@@ -72,12 +76,6 @@ openssl rand -hex 32
 
 **Option 2: Use a strong password**
 The system will derive a key from your password using PBKDF2, but a random hex key is more secure.
-
-**⚠️ WARNING**: 
-- Store your encryption key securely (e.g., in a password manager or secrets management system)
-- If you lose the encryption key, all encrypted SSH credentials will be unrecoverable
-- Never commit the encryption key to version control
-- Use different keys for different environments (development, staging, production)
 
 Add the key to your `.env` file:
 ```bash
@@ -89,6 +87,13 @@ Or in `docker-compose.yml`:
 environment:
   - ENCRYPTION_KEY=your-generated-key-here
 ```
+
+**⚠️ WARNING**: 
+- **Backup the encryption key file** (`DATA_DIR/.encryption_key`) - if lost, all encrypted SSH credentials will be unrecoverable
+- The key file should be included in your backup strategy
+- Never commit the encryption key to version control
+- If using Docker volumes, ensure the data directory (containing the key file) is properly backed up
+- Use different keys for different environments (development, staging, production) by setting `ENCRYPTION_KEY` explicitly
 
 ## Configuration
 

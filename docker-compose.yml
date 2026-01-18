@@ -12,6 +12,8 @@ services:
       - PORT=3001
       - STORAGE_TYPE=file
       - DATA_DIR=/app/data
+      # Encryption Key (optional - will be auto-generated if not set)
+      # - ENCRYPTION_KEY=your-encryption-key-here
       # SSL Configuration (uncomment to enable)
       # - SSL_MODE=letsencrypt
       # - LETSENCRYPT_DOMAIN=example.com
